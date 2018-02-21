@@ -17,7 +17,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var mapView: MKMapView!
     
     let locationManager = CLLocationManager()
-    
+    //var inPolygons = [Any]()
+    var inPolygons = ""
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -30,14 +31,17 @@ class ViewController: UIViewController {
         
     }
     
-    func postToServerFunction(latitude: Any, longitude: Any){
+    func postToServerFunction(latitude: Any, longitude: Any, currentlyIn: Any){
         let url:NSURL = NSURL(string: "http://ksucsprojects.com/OtherStuff/GoogleMapsProject/appConnection.php")!
         let session = URLSession.shared
         
         let request = NSMutableURLRequest(url: url as URL)
         request.httpMethod = "POST"
         
-        let paramString = "lat=\(latitude)&long=\(longitude)"
+        let paramString = "lat=\(latitude)&long=\(longitude)&currentlyIn=\(currentlyIn)"
+        //let bodyObject = ["lat": latitude, "long": longitude, "currentlyIn": currentlyIn] as Dictionary
+        
+        //request.httpBody = try? JSONSerialization.data(withJSONObject: bodyObject, options: [])
         request.httpBody = paramString.data(using: String.Encoding.utf8)
         
         let task = session.dataTask(with: request as URLRequest) { (data, response, error) in
@@ -46,8 +50,19 @@ class ViewController: UIViewController {
                 return
             }
             
+            //if let data = data {
+             //   do {
+              //      let json = try JSONSerialization.jsonObject(with: data, options: [])
+               //     self.inPolygons = [json]
+                //    print(self.inPolygons)
+                //} catch {
+                 //   print(error)
+                //}
+            //}
             if let dataString = NSString(data: data!, encoding: String.Encoding.utf8.rawValue){
-                print(dataString)
+                self.inPolygons = dataString as String
+                //print(dataString)
+                //print(self.inPolygons)
             }
         }
         task.resume()
@@ -56,7 +71,7 @@ class ViewController: UIViewController {
     
    
     @IBAction func postToServerButton(_ sender: Any) {
-        postToServerFunction(latitude: "1", longitude: "2")
+        postToServerFunction(latitude: "1", longitude: "2", currentlyIn: self.inPolygons)
     }
     
     
@@ -67,7 +82,7 @@ class ViewController: UIViewController {
     }
 
 
-    @IBAction func addRegion(_ sender: Any) {
+    /*@IBAction func addRegion(_ sender: Any) {
         guard let longPress = sender as? UILongPressGestureRecognizer else {
             return
         }
@@ -97,7 +112,7 @@ class ViewController: UIViewController {
         content.sound = .default()
         let request = UNNotificationRequest(identifier: "notif", content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
-    }
+    }*/
 }
 
 extension ViewController: CLLocationManagerDelegate{
@@ -105,26 +120,28 @@ extension ViewController: CLLocationManagerDelegate{
         //locationManager.stopUpdatingLocation()
         mapView.showsUserLocation = true
         guard let locValue: CLLocationCoordinate2D = manager.location?.coordinate else { return }
-        postToServerFunction(latitude: locValue.latitude, longitude: locValue.longitude)
+        postToServerFunction(latitude: locValue.latitude, longitude: locValue.longitude, currentlyIn: self.inPolygons)
         //print("locations = \(locValue.latitude) \(locValue.longitude)")
         
     }
     
-    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+    /*func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         let title = "You entered the region"
-        let message = "penis"
+        let message = "test"
         showAlert(title: title, message: message)
         showNotification(title: title, message: message)
     }
     
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         let title = "You left the region"
-        let message = "penis"
+        let message = "test"
         showAlert(title: title, message: message)
-        showNotification(title: title, message: message)    }
+        showNotification(title: title, message: message)
+ 
+    }*/
 }
 
-extension ViewController: MKMapViewDelegate{
+/*extension ViewController: MKMapViewDelegate{
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         guard let circleOverlay = overlay as? MKCircle else {return MKOverlayRenderer() }
         let circleRenderer = MKCircleRenderer(circle: circleOverlay)
@@ -133,4 +150,4 @@ extension ViewController: MKMapViewDelegate{
         circleRenderer.alpha = 0.5
         return circleRenderer
     }
-}
+}*/
